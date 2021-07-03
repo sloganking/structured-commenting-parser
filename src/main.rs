@@ -52,6 +52,9 @@ fn main() {
         // seperate string into lines
             let lines: Vec<&str> = contents.split('\n').collect();
 
+        // remove all '/r'
+            let lines: Vec<String> = lines.into_iter().map(|x| x.replace("\r", "")).collect();
+
         // for line in lines.iter() {
         //     println!("\n{}", line);
         //     println!("{}", count_tabs(line));
@@ -70,58 +73,56 @@ fn main() {
         let mut end_child_count = 0;
 
         for line in lines {
-            current_depth = count_tabs(line);
+            current_depth = count_tabs(&line);
 
-            if line_is_a_comment(line) {
-                tree.begin_child(line[count_tabs(line)..].to_string());
-                begin_child_count += 1;
-                comment_closing_depths.push(current_depth);
-            }
-
-            if comment_closing_depths.len() > 0 {
-                println!("comment_closing_depths.len() > 0");
-                println!("contains_non_space(line): {}", contains_non_space(line));
-                if contains_non_space(line) {
-                    while current_depth <= comment_closing_depths[comment_closing_depths.len() - 1] {
-                        println!("loop!");
+            // see if comments need closing
+                if comment_closing_depths.len() > 0 && contains_non_space(&line){
+                    while comment_closing_depths.len() > 0 && current_depth <= comment_closing_depths[comment_closing_depths.len() - 1] {
+                        println!("line: {}",line);
                         comment_closing_depths.pop();
                         tree.end_child();
                         end_child_count += 1;
                     }
                 }
-            }
+            // see if current line creates new comment
+                if line_is_a_comment(&line) {
+                    tree.begin_child(line[count_tabs(&line)..].to_string());
+                    begin_child_count += 1;
+                    comment_closing_depths.push(current_depth);
+                }
         }
 
         println!("begin_child_count: {}", begin_child_count);
         println!("end_child_count: {}", end_child_count);
 
-    // print_tree(&tree).unwrap();
+    tree.build();
+    print_tree(&tree).unwrap();
 
     // example code
-        // // Build a tree using a TreeBuilder
-        // let tree = TreeBuilder::new("tree".to_string())
-        //     .begin_child("branch".to_string())
-        //         // .add_empty_child("leaf".to_string())
-        //         // .add_empty_child("leaf2".to_string())
-        //         .begin_child("branch2".to_string())
+        // Build a tree using a TreeBuilder
+        let tree = TreeBuilder::new("tree".to_string())
+            .begin_child("branch".to_string())
+                // .add_empty_child("leaf".to_string())
+                // .add_empty_child("leaf2".to_string())
+                .begin_child("branch2".to_string())
 
-        //             .add_empty_child("empty branch".to_string())
+                    .add_empty_child("empty branch".to_string())
 
-        //             .begin_child("branch2".to_string())
-        //                 .add_empty_child("empty branch".to_string())
-        //             .end_child()
+                    .begin_child("branch2".to_string())
+                        .add_empty_child("empty branch".to_string())
+                    .end_child()
 
-        //             .begin_child("branch2".to_string())
-        //             .end_child()
+                    .begin_child("branch2".to_string())
+                    .end_child()
 
-        //             .begin_child("branch2".to_string())
-        //             .end_child()
+                    .begin_child("branch2".to_string())
+                    .end_child()
 
-        //         .end_child()
-        //     .end_child()
-        //     .add_empty_child("empty branch".to_string())
-        //     .build();
+                .end_child()
+            .end_child()
+            .add_empty_child("empty branch".to_string())
+            .build();
 
-        // // Print out the tree using default formatting
-        // print_tree(&tree).unwrap();
+        // Print out the tree using default formatting
+        print_tree(&tree).unwrap();
 }

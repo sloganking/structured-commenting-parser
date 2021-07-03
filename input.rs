@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-// use std::fs::File;
+    // use std::fs::File;
 // use std::io::prelude::*;
 
 const REGS: [&str; 4] = ["A", "B", "C", "D"];
