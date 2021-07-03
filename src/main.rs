@@ -1,5 +1,4 @@
 use ptree::{print_tree, TreeBuilder};
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -65,7 +64,6 @@ fn main() {
 
     // assemble tree
         let mut comment_closing_depths: Vec<usize> = Vec::new();
-        let mut current_depth = 0;
 
         let mut tree = TreeBuilder::new("code".to_string());
 
@@ -73,12 +71,11 @@ fn main() {
         let mut end_child_count = 0;
 
         for line in lines {
-            current_depth = count_tabs(&line);
+            let current_depth = count_tabs(&line);
 
             // see if comments need closing
                 if comment_closing_depths.len() > 0 && contains_non_space(&line){
                     while comment_closing_depths.len() > 0 && current_depth <= comment_closing_depths[comment_closing_depths.len() - 1] {
-                        println!("line: {}",line);
                         comment_closing_depths.pop();
                         tree.end_child();
                         end_child_count += 1;
@@ -86,43 +83,43 @@ fn main() {
                 }
             // see if current line creates new comment
                 if line_is_a_comment(&line) {
-                    tree.begin_child(line[count_tabs(&line)..].to_string());
+                    tree.begin_child(line[(count_tabs(&line)*4)+3..].to_string());
                     begin_child_count += 1;
                     comment_closing_depths.push(current_depth);
                 }
         }
 
-        println!("begin_child_count: {}", begin_child_count);
-        println!("end_child_count: {}", end_child_count);
+        // println!("begin_child_count: {}", begin_child_count);
+        // println!("end_child_count: {}", end_child_count);
 
-    tree.build();
+    // turn to StringItem (not sure why)
+    let tree = tree.build();
+
     print_tree(&tree).unwrap();
 
     // example code
-        // Build a tree using a TreeBuilder
-        let tree = TreeBuilder::new("tree".to_string())
-            .begin_child("branch".to_string())
-                // .add_empty_child("leaf".to_string())
-                // .add_empty_child("leaf2".to_string())
-                .begin_child("branch2".to_string())
+        // // Build a tree using a TreeBuilder
+        // let tree = TreeBuilder::new("tree".to_string())
+        //     .begin_child("branch".to_string())
+        //         .begin_child("branch2".to_string())
 
-                    .add_empty_child("empty branch".to_string())
+        //             .add_empty_child("empty branch".to_string())
 
-                    .begin_child("branch2".to_string())
-                        .add_empty_child("empty branch".to_string())
-                    .end_child()
+        //             .begin_child("branch2".to_string())
+        //                 .add_empty_child("empty branch".to_string())
+        //             .end_child()
 
-                    .begin_child("branch2".to_string())
-                    .end_child()
+        //             .begin_child("branch2".to_string())
+        //             .end_child()
 
-                    .begin_child("branch2".to_string())
-                    .end_child()
+        //             .begin_child("branch2".to_string())
+        //             .end_child()
 
-                .end_child()
-            .end_child()
-            .add_empty_child("empty branch".to_string())
-            .build();
+        //         .end_child()
+        //     .end_child()
+        //     .add_empty_child("empty branch".to_string())
+        //     .build();
 
-        // Print out the tree using default formatting
-        print_tree(&tree).unwrap();
+        // // Print out the tree using default formatting
+        // print_tree(&tree).unwrap();
 }
